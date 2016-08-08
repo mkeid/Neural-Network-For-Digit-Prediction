@@ -15,15 +15,36 @@ import java.nio.file.Files;
 import java.util.List;
 
 public class DigitPredictor {
-    private static int[][] trainingExamples;
-    private static int[] trainingLabels;
+    private static int[][] exampleSet;
+    private static int[] labelSet;
 
     public static void main(String[] args) throws IOException {
-        // Get training data
+        // Get example data from .csv file
         initTrainingExamples("mnist_train.csv");
 
+        // Split the example and label set into training sets and testing sets
+        double percentTrain = 0.7;
+        int trainSetSize = (int) Math.round(exampleSet.length * percentTrain);
+        int testSetSize = exampleSet.length - trainSetSize;
+        int[][] trainingExampleSet = new int[trainSetSize][];
+        int[] trainingLabelSet = new int[trainSetSize];
+        int[][] testingExampleSet = new int[testSetSize][];
+        int[] testingLabelSet = new int[testSetSize];
+        int inputSize = exampleSet[0].length - 1;
+
+        // Initialize the training and testing sets
+        for(int exampleIndex = 0; exampleIndex < (trainSetSize + testSetSize); exampleIndex++) {
+            if(exampleIndex < trainSetSize) {
+                trainingExampleSet[exampleIndex] = exampleSet[exampleIndex];
+                trainingLabelSet[exampleIndex] = labelSet[exampleIndex];
+            } else {
+                int index = exampleIndex - trainSetSize;
+                testingExampleSet[index] = exampleSet[index];
+                testingLabelSet[index] = labelSet[index];
+            }
+        }
+
         // Initialize structure of neural network
-        int inputSize = trainingExamples[0].length - 1;
         int[] hiddenLayerSizes = {30};
         int numClasses = getNumClasses();
 
@@ -32,8 +53,8 @@ public class DigitPredictor {
 
         // Train it and get the accuracy of the algorithm
         int iterationsOfTraining = 500;
-        neuralNetwork.train(trainingExamples, trainingLabels, iterationsOfTraining);
-        double accuracy = neuralNetwork.checkAccuracy(trainingExamples, trainingLabels);
+        neuralNetwork.train(trainingExampleSet, trainingLabelSet, iterationsOfTraining);
+        double accuracy = neuralNetwork.checkAccuracy(testingExampleSet, testingLabelSet);
         System.out.println("Accuracy: " + accuracy);
     }
 
@@ -41,9 +62,9 @@ public class DigitPredictor {
     private static int getNumClasses() {
         int numClasses = 0;
 
-        for(int trainingExampleIndex = 0; trainingExampleIndex < trainingLabels.length; trainingExampleIndex++)
-            if(trainingLabels[trainingExampleIndex] > numClasses)
-                numClasses = trainingLabels[trainingExampleIndex];
+        for(int trainingExampleIndex = 0; trainingExampleIndex < labelSet.length; trainingExampleIndex++)
+            if(labelSet[trainingExampleIndex] > numClasses)
+                numClasses = labelSet[trainingExampleIndex];
 
         return numClasses + 1;
     }
@@ -57,8 +78,8 @@ public class DigitPredictor {
         int lineCount = lines.size();
 
         // Initialize variables for training records
-        trainingExamples = new int[lineCount][];
-        trainingLabels = new int[trainingExamples.length];
+        exampleSet = new int[lineCount][];
+        labelSet = new int[exampleSet.length];
 
         // Read through every line of the file
         int lineIndex = 0;
@@ -68,12 +89,12 @@ public class DigitPredictor {
                 String[] array = line.split(",");
 
                 // First integer is the class (the written integer)
-                trainingLabels[lineIndex - 1] = Integer.parseInt(array[0]);
+                labelSet[lineIndex - 1] = Integer.parseInt(array[0]);
 
                 // The remaining integers are features (pixel brightness)
-                trainingExamples[lineIndex - 1] = new int[array.length - 1];
+                exampleSet[lineIndex - 1] = new int[array.length - 1];
                 for (int i = 1; i < array.length; i++)
-                    trainingExamples[lineIndex - 1][i - 1] = Integer.parseInt(array[i]);
+                    exampleSet[lineIndex - 1][i - 1] = Integer.parseInt(array[i]);
             }
 
             lineIndex++;
