@@ -1,14 +1,19 @@
 // File:  NeuralNetwork.java
 // Name:  Mo K. Eid (mohamedkeid@gmail.com)
-// Date:  08/07/2016
+// Date:  08/08/2016
 // Desc:  A customizable neural network class built from scratch that makes use of batch gradient descent
 import java.util.Random;
 
 class NeuralNetwork {
-    private int inputSize;                   // Input size
-    private int[] hiddenLayerSizes;          // Array containing the number of nodes for each hidden layer
-    private int numClassifiers;              // Output size
-    private double[][] weightsForAllLayers;  // Matrix including the weight vectors between each layer
+    // Instance variables related to the structure of the neural network
+    private int inputSize;
+    private int[] hiddenLayerSizes;
+    private int numClassifiers;
+
+    // Matrix containing the weight vectors between each layer
+    private double[][] weightsForAllLayers;
+
+    // Instance variables related to optimization
     private double learningRate;
     private double regularizationRate;
 
