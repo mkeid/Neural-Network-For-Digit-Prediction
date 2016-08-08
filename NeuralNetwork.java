@@ -10,6 +10,7 @@ class NeuralNetwork {
     private int numClassifiers;              // Output size
     private double[][] weightsForAllLayers;  // Matrix including the weight vectors between each layer
     private double learningRate;
+    private double regularizationRate;
 
     public NeuralNetwork(int paramInputSize, int[] paramHiddenLayerSizes, int paramNumClassifiers) {
         inputSize = paramInputSize;
@@ -17,6 +18,7 @@ class NeuralNetwork {
         numClassifiers = paramNumClassifiers;
         weightsForAllLayers = generateRandomWeights();
         learningRate = 0.1;
+        regularizationRate = 0.3;
     }
 
     // Infer a function from labeled training data
@@ -173,6 +175,7 @@ class NeuralNetwork {
                 for(int currentNodeIndex = 0; currentNodeIndex < currentLayerSize; currentNodeIndex++) {
                     int weightIndex = (nextNodeIndex * currentLayerSize) + currentNodeIndex;
                     gradient[deltaLayerIndex][weightIndex] /= trainingExamples.length;
+                    weightsForAllLayers[deltaLayerIndex][weightIndex] *= 1 - learningRate * regularizationRate / trainingExamples.length;
                     weightsForAllLayers[deltaLayerIndex][weightIndex] -= gradient[deltaLayerIndex][weightIndex] * learningRate;
                 }
             }
