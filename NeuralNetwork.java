@@ -30,7 +30,7 @@ class NeuralNetwork {
     public void train(int[][] trainingExamples, int[] trainingActual, int numIterations) {
         int i = 0;
         while(i < numIterations) {
-            System.out.println("Training Iteration: " + (i + 1));
+            System.out.println("Training Iteration: " + (i + 1) + " of " + numIterations);
             backPropagation(trainingExamples, trainingActual);
             i++;
         }
