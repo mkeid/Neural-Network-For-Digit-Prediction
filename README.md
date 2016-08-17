@@ -1,4 +1,4 @@
-# Neural Network (Digit Predictor AI)
+# Neural Network For Digit Prediction (Machine Learning)
 Creates and trains a neural network to predict images (28x28 pixels) of hand-written digits.  
 The accuracy based on its own training examples is then computed and printed to the log.
 
