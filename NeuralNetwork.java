@@ -1,6 +1,6 @@
 // File:  NeuralNetwork.java
 // Name:  Mo K. Eid (mohamedkeid@gmail.com)
-// Date:  08/08/2016
+// Date:  08/09/2016
 // Desc:  A customizable neural network class built from scratch that makes use of batch gradient descent
 import java.util.Random;
 
@@ -46,8 +46,9 @@ class NeuralNetwork {
 
             // Compute layer sizes (the + 1 is for the bias node)
             int previousLayerSize = previousIsInput ? inputSize : (hiddenLayerSizes[activationLayerIndex - 1] + 1);
-            int currentLayerSize = onOutputLayer ? numClassifiers : (hiddenLayerSizes[activationLayerIndex] + 1);
-            predictions[activationLayerIndex] = new double[currentLayerSize];
+            int currentLayerSize = onOutputLayer ? numClassifiers : (hiddenLayerSizes[activationLayerIndex]);
+            boolean shouldAddBias = !onOutputLayer;
+            predictions[activationLayerIndex] = new double[currentLayerSize + (shouldAddBias ? 1 : 0)];
 
             // Compute activations for each node in the current layer
             for(int activationNodeIndex = 0; activationNodeIndex < currentLayerSize; activationNodeIndex++) {
@@ -66,7 +67,7 @@ class NeuralNetwork {
             }
 
             // Add bias if needed
-            if(!onOutputLayer) {
+            if(shouldAddBias) {
                 int biasIndex = hiddenLayerSizes[activationLayerIndex];
                 predictions[activationLayerIndex][biasIndex] = 1;
             }
@@ -122,7 +123,7 @@ class NeuralNetwork {
                 // Calculate hidden layer deltas
                 else {
                     boolean nextLayerIsOutput = (deltaLayerIndex == deltas.length - 2);
-                    int nextLayerSize = nextLayerIsOutput ? numClassifiers : hiddenLayerSizes[deltaLayerIndex] + 1;
+                    int nextLayerSize = nextLayerIsOutput ? numClassifiers : hiddenLayerSizes[deltaLayerIndex];
 
                     // Iterate through each activation node
                     for(int nodeIndex = 0; nodeIndex < currentLayerSize; nodeIndex++) {
@@ -145,7 +146,7 @@ class NeuralNetwork {
             for(int deltaLayerIndex = deltas.length - 1; deltaLayerIndex >= 0; deltaLayerIndex--) {
                 // Get parameters on the current layer
                 boolean onOutputLayer = (deltaLayerIndex == deltas.length - 1);
-                int currentLayerSize = onOutputLayer ? numClassifiers : hiddenLayerSizes[deltaLayerIndex] + 1;
+                int currentLayerSize = onOutputLayer ? numClassifiers : hiddenLayerSizes[deltaLayerIndex];
 
                 // Get parameters on the previous layer
                 boolean previousIsInput = (deltaLayerIndex == 0);
@@ -174,7 +175,7 @@ class NeuralNetwork {
             boolean onInputLayer = (deltaLayerIndex == 0);
             int currentLayerSize = onInputLayer ? inputSize : hiddenLayerSizes[deltaLayerIndex - 1] + 1;
             boolean nextIsOutLayer = (deltaLayerIndex == gradient.length - 1);
-            int nextLayerSize = nextIsOutLayer ? numClassifiers : hiddenLayerSizes[deltaLayerIndex] + 1;
+            int nextLayerSize = nextIsOutLayer ? numClassifiers : hiddenLayerSizes[deltaLayerIndex];
 
             for(int nextNodeIndex = 0; nextNodeIndex < nextLayerSize; nextNodeIndex++) {
                 for(int currentNodeIndex = 0; currentNodeIndex < currentLayerSize; currentNodeIndex++) {
@@ -199,7 +200,7 @@ class NeuralNetwork {
         // Iterate through each layer of nodes
         for(int weightLayerIndex = 0; weightLayerIndex < weights.length; weightLayerIndex++) {
             boolean forHiddenLayer = (weightLayerIndex != weights.length - 1);
-            int currentLayerSize = forHiddenLayer ? hiddenLayerSizes[weightLayerIndex] + 1 : numClassifiers;
+            int currentLayerSize = forHiddenLayer ? hiddenLayerSizes[weightLayerIndex] : numClassifiers;
 
             boolean previousIsInputLayer = (weightLayerIndex == 0);
             int previousLayerSize = previousIsInputLayer ? inputSize : hiddenLayerSizes[weightLayerIndex - 1] + 1;
