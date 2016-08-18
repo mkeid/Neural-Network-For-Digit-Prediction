@@ -1,7 +1,7 @@
 // File:  NeuralNetwork.java
 // Name:  Mo K. Eid (mohamedkeid@gmail.com)
-// Date:  08/09/2016
 // Desc:  A customizable neural network class built from scratch that makes use of batch gradient descent
+
 import java.util.Random;
 
 class NeuralNetwork {
@@ -123,7 +123,7 @@ class NeuralNetwork {
                 // Calculate hidden layer deltas
                 else {
                     boolean nextLayerIsOutput = (deltaLayerIndex == deltas.length - 2);
-                    int nextLayerSize = nextLayerIsOutput ? numClassifiers : hiddenLayerSizes[deltaLayerIndex];
+                    int nextLayerSize = nextLayerIsOutput ? numClassifiers : hiddenLayerSizes[deltaLayerIndex + 1];
 
                     // Iterate through each activation node
                     for(int nodeIndex = 0; nodeIndex < currentLayerSize; nodeIndex++) {

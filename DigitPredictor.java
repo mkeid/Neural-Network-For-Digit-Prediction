@@ -1,6 +1,5 @@
 // File:  DigitPredictor.java
 // Name:  Mo K. Eid (mohamedkeid@gmail.com)
-// Date:  08/08/2016
 // Desc:  Creates and trains a neural network to predict images (28x28 pixels) of hand-written digits
 //        The accuracy based on its own training examples is then computed and printed to the log
 //        Training example records in the mnist set consist of 29 elements separated by ","
@@ -9,6 +8,7 @@
 //            28 input nodes for each image pixel  (calculated)
 //            1 hidden layer comprised of 30 nodes (hard-coded)
 //            10 classes for hand-written digits   (calculated)
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -52,7 +52,7 @@ public class DigitPredictor {
         NeuralNetwork neuralNetwork = new NeuralNetwork(inputSize, hiddenLayerSizes, numClasses);
 
         // Train it and get the accuracy of the algorithm
-        int iterationsOfTraining = 500;
+        int iterationsOfTraining = 777;
         neuralNetwork.train(trainingExampleSet, trainingLabelSet, iterationsOfTraining);
         double accuracy = neuralNetwork.checkAccuracy(testingExampleSet, testingLabelSet);
         System.out.println("Accuracy: " + accuracy);
