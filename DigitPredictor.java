@@ -52,7 +52,7 @@ public class DigitPredictor {
         NeuralNetwork neuralNetwork = new NeuralNetwork(inputSize, hiddenLayerSizes, numClasses);
 
         // Train it and get the accuracy of the algorithm
-        int iterationsOfTraining = 777;
+        int iterationsOfTraining = 700;
         neuralNetwork.train(trainingExampleSet, trainingLabelSet, iterationsOfTraining);
         double accuracy = neuralNetwork.checkAccuracy(testingExampleSet, testingLabelSet);
         System.out.println("Accuracy: " + accuracy);

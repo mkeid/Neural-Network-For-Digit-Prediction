@@ -23,7 +23,7 @@ class NeuralNetwork {
         numClassifiers = paramNumClassifiers;
         weightsForAllLayers = generateRandomWeights();
         learningRate = 0.1;
-        regularizationRate = 0.3;
+        regularizationRate = 0.1;
     }
 
     // Infer a function from labeled training data
@@ -181,7 +181,11 @@ class NeuralNetwork {
                 for(int currentNodeIndex = 0; currentNodeIndex < currentLayerSize; currentNodeIndex++) {
                     int weightIndex = (nextNodeIndex * currentLayerSize) + currentNodeIndex;
                     gradient[deltaLayerIndex][weightIndex] /= trainingExamples.length;
-                    weightsForAllLayers[deltaLayerIndex][weightIndex] *= 1 - learningRate * regularizationRate / trainingExamples.length;
+
+                    // Introduce regularization to prevent overfitting
+                    if(currentNodeIndex != currentLayerSize - 1 && !onInputLayer)
+                        weightsForAllLayers[deltaLayerIndex][weightIndex] *= 1 - learningRate * regularizationRate / trainingExamples.length;
+
                     weightsForAllLayers[deltaLayerIndex][weightIndex] -= gradient[deltaLayerIndex][weightIndex] * learningRate;
                 }
             }
