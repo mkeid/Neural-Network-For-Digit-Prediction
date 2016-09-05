@@ -17,7 +17,7 @@ class NeuralNetwork {
     private double learningRate;
     private double regularizationRate;
 
-    // Normalization parameters
+    // Normalization parameter
     private double[] featureAverages;
 
     NeuralNetwork(int paramInputSize, int[] paramHiddenLayerSizes, int paramNumClassifiers) {
@@ -264,7 +264,7 @@ class NeuralNetwork {
                     sum += weightVal * previousNodeVal;
                 }
 
-                // Activate the summed value and assign it in the predictions matrix/initW
+                // Activate the summed value and assign it in the predictions matrix
                 double activation = activate(sum);
                 predictions[actLayerIndex][actNodeIndex] = activation;
             }
