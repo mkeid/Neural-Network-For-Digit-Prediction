@@ -5,9 +5,9 @@
 //        Training example records in the mnist set consist of 29 elements separated by ","
 //        Element 0 is the labeled class and the remaining 28 elements are pixel intensities for each image pixel
 //        The default structure of the neural network consists of:
-//            28 input nodes for each image pixel  (calculated)
-//            1 hidden layer comprised of 30 nodes (hard-coded)
-//            10 classes for hand-written digits   (calculated)
+//              28 input nodes for each image pixel  (calculated)
+//              1 hidden layer comprised of 30 nodes (hard-coded)
+//              10 classes for hand-written digits   (calculated)
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -23,14 +23,14 @@ public class DigitPredictor {
         initTrainingExamples("mnist_train.csv");
 
         // Split the example and label set into training sets and testing sets
-        double percentTrain = 0.7;
+        double percentTrain = 0.8;
         int trainSetSize = (int) Math.round(exampleSet.length * percentTrain);
         int testSetSize = exampleSet.length - trainSetSize;
         int[][] trainingExampleSet = new int[trainSetSize][];
         int[] trainingLabelSet = new int[trainSetSize];
         int[][] testingExampleSet = new int[testSetSize][];
         int[] testingLabelSet = new int[testSetSize];
-        int inputSize = exampleSet[0].length - 1;
+        int inputSize = exampleSet[0].length;
 
         // Initialize the training and testing sets
         for(int exampleIndex = 0; exampleIndex < (trainSetSize + testSetSize); exampleIndex++) {
@@ -52,7 +52,7 @@ public class DigitPredictor {
         NeuralNetwork neuralNetwork = new NeuralNetwork(inputSize, hiddenLayerSizes, numClasses);
 
         // Train it and get the accuracy of the algorithm
-        int iterationsOfTraining = 700;
+        int iterationsOfTraining = 200;
         neuralNetwork.train(trainingExampleSet, trainingLabelSet, iterationsOfTraining);
         double accuracy = neuralNetwork.checkAccuracy(testingExampleSet, testingLabelSet);
         System.out.println("Accuracy: " + accuracy);
@@ -62,9 +62,9 @@ public class DigitPredictor {
     private static int getNumClasses() {
         int numClasses = 0;
 
-        for(int trainingExampleIndex = 0; trainingExampleIndex < labelSet.length; trainingExampleIndex++)
-            if(labelSet[trainingExampleIndex] > numClasses)
-                numClasses = labelSet[trainingExampleIndex];
+        for(int label: labelSet)
+            if(label > numClasses)
+                numClasses = label;
 
         return numClasses + 1;
     }
@@ -83,7 +83,7 @@ public class DigitPredictor {
 
         // Read through every line of the file
         int lineIndex = 0;
-        for (String line : lines) {
+        for(String line : lines) {
             if(lineIndex != 0 && lineIndex < lineCount) {
                 // Parse training example and label into an array of characters
                 String[] array = line.split(",");

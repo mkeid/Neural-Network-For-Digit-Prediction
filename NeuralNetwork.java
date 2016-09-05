@@ -17,71 +17,39 @@ class NeuralNetwork {
     private double learningRate;
     private double regularizationRate;
 
-    public NeuralNetwork(int paramInputSize, int[] paramHiddenLayerSizes, int paramNumClassifiers) {
+    // Normalization parameters
+    private double[] featureAverages;
+
+    NeuralNetwork(int paramInputSize, int[] paramHiddenLayerSizes, int paramNumClassifiers) {
         inputSize = paramInputSize;
         hiddenLayerSizes = paramHiddenLayerSizes;
         numClassifiers = paramNumClassifiers;
         weightsForAllLayers = generateRandomWeights();
         learningRate = 0.1;
-        regularizationRate = 0.1;
+        regularizationRate = 0.05;
     }
 
     // Infer a function from labeled training data
-    public void train(int[][] trainingExamples, int[] trainingActual, int numIterations) {
+    void train(int[][] trainingExamples, int[] trainingActual, int numIterations) {
+        // Center the training data features
+        calculateFeatureMeans(trainingExamples);
+        double[][] normalizedExamples = normalizeFeatures(trainingExamples);
+
         int i = 0;
         while(i < numIterations) {
             System.out.println("Training Iteration: " + (i + 1) + " of " + numIterations);
-            backPropagation(trainingExamples, trainingActual);
+            backPropagation(normalizedExamples, trainingActual);
             i++;
         }
     }
 
-    // Make prediction based on its training
-    public double[][] predict(int[] input) {
-        double[][] predictions = new double[this.hiddenLayerSizes.length + 1][];
-
-        for(int activationLayerIndex = 0; activationLayerIndex < predictions.length; activationLayerIndex++) {
-            boolean onOutputLayer = (activationLayerIndex == predictions.length - 1);
-            boolean previousIsInput = (activationLayerIndex == 0);
-
-            // Compute layer sizes (the + 1 is for the bias node)
-            int previousLayerSize = previousIsInput ? inputSize : (hiddenLayerSizes[activationLayerIndex - 1] + 1);
-            int currentLayerSize = onOutputLayer ? numClassifiers : (hiddenLayerSizes[activationLayerIndex]);
-            boolean shouldAddBias = !onOutputLayer;
-            predictions[activationLayerIndex] = new double[currentLayerSize + (shouldAddBias ? 1 : 0)];
-
-            // Compute activations for each node in the current layer
-            for(int activationNodeIndex = 0; activationNodeIndex < currentLayerSize; activationNodeIndex++) {
-                // Sum the connections between the appropriate nodes in the current layer and the previous layer
-                double sum = 0.0;
-                for(int previousNodeIndex = 0; previousNodeIndex < previousLayerSize; previousNodeIndex++) {
-                    int weightIndex = (previousLayerSize * activationNodeIndex) + previousNodeIndex;
-                    double weightVal = weightsForAllLayers[activationLayerIndex][weightIndex];
-                    double previousNodeVal = previousIsInput ? input[previousNodeIndex] : predictions[activationLayerIndex - 1][previousNodeIndex];
-                    sum += weightVal * previousNodeVal;
-                }
-
-                // Activate the summed value and assign it in the predictions matrix/initW
-                double activation = activate(sum);
-                predictions[activationLayerIndex][activationNodeIndex] = activation;
-            }
-
-            // Add bias if needed
-            if(shouldAddBias) {
-                int biasIndex = hiddenLayerSizes[activationLayerIndex];
-                predictions[activationLayerIndex][biasIndex] = 1;
-            }
-        }
-
-        return predictions;
-    }
-
     // Return the rate the neural network predicts its own labeled training examples correctly
-    public double checkAccuracy(int[][] inputSet, int[] actualSet) {
+    double checkAccuracy(int[][] inputSet, int[] actualSet) {
+        double[][] normalizedInputSet = normalizeFeatures(inputSet);
         double numCorrect = 0.0;
 
         for(int inputIndex = 1; inputIndex < inputSet.length - 1; inputIndex++) {
-            int[] trainingExample = inputSet[inputIndex];
+            double[] trainingExample = normalizedInputSet[inputIndex];
             double[][] predictions = predict(trainingExample);
             double[] predictedOutput = predictions[predictions.length - 1];
             int predictedClass = translatePrediction(predictedOutput);
@@ -92,7 +60,7 @@ class NeuralNetwork {
     }
 
     // Backward propagate errors in batch mode and update weights given labeled training data
-    private void backPropagation( int[][] trainingExamples, int[] trainingActual) {
+    private void backPropagation(double[][] trainingExamples, int[] trainingActual) {
         // Initialize the delta accumulator
         double[][] gradient = new double[hiddenLayerSizes.length + 1][];
 
@@ -116,8 +84,10 @@ class NeuralNetwork {
                     // Encode the class into a vector
                     int[] encodedActual = oneHotEncode(trainingActual[trainingExampleIndex]);
 
-                    for(int nodeIndex = 0; nodeIndex < numClassifiers; nodeIndex++)
-                        deltas[deltaLayerIndex][nodeIndex] = predictions[predictions.length - 1][nodeIndex] - encodedActual[nodeIndex];
+                    for(int nodeIndex = 0; nodeIndex < numClassifiers; nodeIndex++) {
+                        double activationPrime = activatePrime(predictions[predictions.length - 1][nodeIndex]);
+                        deltas[deltaLayerIndex][nodeIndex] = (predictions[predictions.length - 1][nodeIndex] - encodedActual[nodeIndex]) * activationPrime;
+                    }
                 }
 
                 // Calculate hidden layer deltas
@@ -234,14 +204,79 @@ class NeuralNetwork {
         return val * (1 - val);
     }
 
+    private double[][] normalizeFeatures(int[][] set) {
+        double[][] normalizedSet = new double[set.length][];
+
+        for(int exampleIndex = 0; exampleIndex < normalizedSet.length; exampleIndex++) {
+            normalizedSet[exampleIndex] = new double[inputSize];
+
+            for(int featureIndex = 0; featureIndex < inputSize; featureIndex++) {
+                double centeredFeature = set[exampleIndex][featureIndex] - featureAverages[featureIndex];
+                normalizedSet[exampleIndex][featureIndex] = centeredFeature;
+            }
+        }
+
+        return normalizedSet;
+    }
+
+    // Iterate through every example in a set and calculate the mean for each feature
+    private void calculateFeatureMeans(int[][] set) {
+        // Calculate the means
+        featureAverages = new double[inputSize];
+        for(int featureIndex = 0; featureIndex < inputSize; featureIndex++) {
+            for(int exampleIndex = 0; exampleIndex < set.length; exampleIndex++)
+                featureAverages[featureIndex] += set[exampleIndex][featureIndex];
+
+            featureAverages[featureIndex] /= set.length;
+        }
+    }
+
     // Encode classes (i.e., 2 -> [0, 1, 0, .., n])
     private int[] oneHotEncode(int val) {
         int[] encodedVal = new int[numClassifiers];
-
         for(int i = 0; i < numClassifiers; i++)
             encodedVal[i] = (i == val) ? 1 : 0;
-
         return encodedVal;
+    }
+
+    // Make prediction based on its training
+    private double[][] predict(double[] input) {
+        double[][] predictions = new double[this.hiddenLayerSizes.length + 1][];
+
+        for(int actLayerIndex = 0; actLayerIndex < predictions.length; actLayerIndex++) {
+            boolean onOutputLayer = (actLayerIndex == predictions.length - 1);
+            boolean previousIsInput = (actLayerIndex == 0);
+
+            // Compute layer sizes (the + 1 is for the bias node)
+            int previousLayerSize = previousIsInput ? inputSize : (hiddenLayerSizes[actLayerIndex - 1] + 1);
+            int currentLayerSize = onOutputLayer ? numClassifiers : (hiddenLayerSizes[actLayerIndex]);
+            boolean shouldAddBias = !onOutputLayer;
+            predictions[actLayerIndex] = new double[currentLayerSize + (shouldAddBias ? 1 : 0)];
+
+            // Compute activations for each node in the current layer
+            for(int actNodeIndex = 0; actNodeIndex < currentLayerSize; actNodeIndex++) {
+                // Sum the connections between the appropriate nodes in the current layer and the previous layer
+                double sum = 0.0;
+                for(int previousNodeIndex = 0; previousNodeIndex < previousLayerSize; previousNodeIndex++) {
+                    int weightIndex = (previousLayerSize * actNodeIndex) + previousNodeIndex;
+                    double weightVal = weightsForAllLayers[actLayerIndex][weightIndex];
+                    double previousNodeVal = previousIsInput ? input[previousNodeIndex] : predictions[actLayerIndex - 1][previousNodeIndex];
+                    sum += weightVal * previousNodeVal;
+                }
+
+                // Activate the summed value and assign it in the predictions matrix/initW
+                double activation = activate(sum);
+                predictions[actLayerIndex][actNodeIndex] = activation;
+            }
+
+            // Add bias if needed
+            if(shouldAddBias) {
+                int biasIndex = hiddenLayerSizes[actLayerIndex];
+                predictions[actLayerIndex][biasIndex] = 1;
+            }
+        }
+
+        return predictions;
     }
 
     // Decode class (i.e., [0, 1, 0, .., n] -> 2)
