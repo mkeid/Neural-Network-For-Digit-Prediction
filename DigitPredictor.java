@@ -12,7 +12,7 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.List;
+import java.util.*;
 
 public class DigitPredictor {
     private static int[][] exampleSet;
@@ -23,7 +23,7 @@ public class DigitPredictor {
         initTrainingExamples("mnist_train.csv");
 
         // Split the example and label set into training sets and testing sets
-        double percentTrain = 0.8;
+        double percentTrain = 0.66;
         int trainSetSize = (int) Math.round(exampleSet.length * percentTrain);
         int testSetSize = exampleSet.length - trainSetSize;
         int[][] trainingExampleSet = new int[trainSetSize][];
@@ -52,7 +52,7 @@ public class DigitPredictor {
         NeuralNetwork neuralNetwork = new NeuralNetwork(inputSize, hiddenLayerSizes, numClasses);
 
         // Train it and get the accuracy of the algorithm
-        int iterationsOfTraining = 200;
+        int iterationsOfTraining = 100;
         neuralNetwork.train(trainingExampleSet, trainingLabelSet, iterationsOfTraining);
         double accuracy = neuralNetwork.checkAccuracy(testingExampleSet, testingLabelSet);
         System.out.println("Accuracy: " + accuracy);
@@ -75,6 +75,11 @@ public class DigitPredictor {
         String basePath = new File("").getAbsolutePath();
         File file = new File(basePath.concat("/" + filePath));
         List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
+        lines.remove(0);
+
+        // Randomize data
+        long seed = System.nanoTime();
+        Collections.shuffle(lines, new Random(seed));
         int lineCount = lines.size();
 
         // Initialize variables for training records
@@ -84,7 +89,7 @@ public class DigitPredictor {
         // Read through every line of the file
         int lineIndex = 0;
         for(String line : lines) {
-            if(lineIndex != 0 && lineIndex < lineCount) {
+            if(lineIndex != 0 &&lineIndex < lineCount) {
                 // Parse training example and label into an array of characters
                 String[] array = line.split(",");
 
